@@ -12,11 +12,60 @@ from folium.plugins import HeatMap, Fullscreen
 from streamlit_folium import st_folium
 import os
 from dotenv import load_dotenv
+import hashlib
 
 # Cargar variables de entorno
 load_dotenv()
 
+# Función de autenticación
+def check_password():
+    """Retorna True si el usuario ha ingresado la contraseña correcta."""
+    
+    def password_entered():
+        """Verifica si la contraseña ingresada es correcta."""
+        if st.session_state["password"] == os.getenv('APP_PASSWORD'):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # No almacenar la contraseña
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # Primera vez, mostrar input para contraseña
+        st.text_input(
+            "🔐 Ingresa la contraseña para acceder", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        st.info("👆 Ingresa la contraseña para continuar")
+        return False
+    elif not st.session_state["password_correct"]:
+        # Contraseña incorrecta, mostrar input nuevamente
+        st.text_input(
+            "🔐 Ingresa la contraseña para acceder", 
+            type="password", 
+            on_change=password_entered, 
+            key="password"
+        )
+        st.error("❌ Contraseña incorrecta")
+        return False
+    else:
+        # Contraseña correcta
+        return True
+
+# Configuración de la página
 st.set_page_config(page_title="Top 10 por Mes", page_icon="🏆", layout="wide")
+
+# Verificar autenticación antes de mostrar la aplicación
+if not check_password():
+    st.stop()  # No ejecutar el resto del código si no está autenticado
+
+# Botón de logout en la sidebar
+with st.sidebar:
+    st.markdown("---")
+    if st.button("🚪 Cerrar Sesión"):
+        st.session_state["password_correct"] = False
+        st.rerun()
 
 MESES_ES = {1:"Enero",2:"Febrero",3:"Marzo",4:"Abril",5:"Mayo",6:"Junio",7:"Julio",8:"Agosto",9:"Septiembre",10:"Octubre",11:"Noviembre",12:"Diciembre"}
 
