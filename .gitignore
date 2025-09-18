@@ -162,4 +162,5 @@ logs/
 *.sqlite3
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
+.streamlit/config.toml
