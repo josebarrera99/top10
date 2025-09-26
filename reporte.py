@@ -239,8 +239,7 @@ def grafico_dias_semana_es(fila):
         dias.append(es)
         pedidos.append(int(fila.get(en, 0)))
     df = pd.DataFrame({"Día": dias, "Pedidos": pedidos}).sort_values("Pedidos", ascending=False)
-    fig = px.bar(df, x="Día", y="Pedidos", title="Pedidos por día de la semana", text="Pedidos")
-    fig.update_traces(textposition="outside")
+    fig = px.pie(df, names="Día", values="Pedidos", title="Distribución de pedidos por día de la semana")
     return fig
 
 def tabla_top10(df):
