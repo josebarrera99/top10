@@ -94,7 +94,7 @@ def consulta_top10_metricas(inicio_dt, fin_dt):
         SELECT
             R.id_restaurant,
             R.name_restaurant,
-            F.numPedido,
+            CAST(COUNT(O.id_order) AS INT) AS numPedido,
             COUNT(DISTINCT AC.id_address) AS numClients,
             CAST(AVG(CASE WHEN O.payment NOT IN (3,4) THEN (O.total + O.costo_envio) END) AS DECIMAL(10,2)) AS ticketAvg,
             AVG(DATEDIFF(MINUTE, O.start_delivery_datetime, O.arrival_client_date)) AS deliveryTimeAvg,
@@ -106,9 +106,8 @@ def consulta_top10_metricas(inicio_dt, fin_dt):
         INNER JOIN [dev_apprisa_delivery].[dbo].tbl_orders O ON R.id_restaurant = O.restaurant
         INNER JOIN [dev_apprisa_delivery].[dbo].ctl_payment P ON P.id_payment = O.payment
         INNER JOIN [dev_apprisa_delivery].[dbo].tbl_address_client AC ON AC.id_address = O.id_address
-        INNER JOIN [dev_apprisa_delivery].[dbo].fn_top10Restaurants('{inicio_fn}', '{fin_fn}') F ON F.id_restaurant = R.id_restaurant
         WHERE O.order_completion_date BETWEEN '{inicio}' AND '{fin}' AND O.[status] = 24
-        GROUP BY R.id_restaurant,R.name_restaurant,F.numPedido
+        GROUP BY R.id_restaurant,R.name_restaurant
     ),
     OrdersByDay AS (
         SELECT
@@ -117,7 +116,6 @@ def consulta_top10_metricas(inicio_dt, fin_dt):
             COUNT(*) AS pedidos
         FROM [dev_apprisa_delivery].[dbo].tbl_restaurants R
         INNER JOIN [dev_apprisa_delivery].[dbo].tbl_orders O ON R.id_restaurant = O.restaurant
-        INNER JOIN [dev_apprisa_delivery].[dbo].fn_top10Restaurants('{inicio_fn}', '{fin_fn}') F ON F.id_restaurant = R.id_restaurant
         WHERE O.order_completion_date BETWEEN '{inicio}' AND '{fin}' AND O.[status] = 24
         GROUP BY R.id_restaurant, DATENAME(WEEKDAY, O.order_completion_date)
     ),
@@ -398,11 +396,11 @@ def app():
     d2 = f"{((dias_activos_mes - dias_activos_ant)/dias_activos_ant*100):.1f}%" if dias_activos_ant>0 else None
     d3 = f"{((prom_mes - prom_ant)/prom_ant*100):.1f}%" if prom_ant>0 else None
     d4 = f"{((creditos_mes - creditos_ant)/creditos_ant*100):.1f}%" if creditos_ant>0 else None
-    m1,m2,m3,m4 = st.columns(4)
+    m1,m2,m3 = st.columns(3)
     m1.metric("Total de Pedidos", pedidos_mes, d1)
     m2.metric("Días Activos", dias_activos_mes, d2)
     m3.metric("Promedio de Pedidos por Día", f"{prom_mes:.1f}", d3)
-    m4.metric("Créditos Usados", f"{creditos_mes:,.0f}", d4)
+    #m4.metric("Créditos Usados", f"{creditos_mes:,.0f}", d4)
     texto_picos, texto_semana = analisis_textual(df_horas, df_diario_mes, f"{mes_sel} {anio_sel}")
     st.markdown(texto_picos)
     st.markdown(texto_semana)
