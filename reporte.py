@@ -237,7 +237,8 @@ def grafico_dias_semana_es(fila):
         dias.append(es)
         pedidos.append(int(fila.get(en, 0)))
     df = pd.DataFrame({"Día": dias, "Pedidos": pedidos}).sort_values("Pedidos", ascending=False)
-    fig = px.pie(df, names="Día", values="Pedidos", title="Distribución de pedidos por día de la semana")
+    fig = px.bar(df, x="Día", y="Pedidos", title="Pedidos por día de la semana", text="Pedidos")
+    fig.update_traces(textposition="outside")
     return fig
 
 def tabla_top10(df):
@@ -348,9 +349,8 @@ def app():
         st.dataframe(tabla_top10(df_top), hide_index=True, use_container_width=True)
     with c2:
         cols_dias = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-        df_metricas["Pedidos Mes"] = df_metricas[cols_dias].sum(axis=1)
-        df_top10 = df_metricas.sort_values("Pedidos Mes", ascending=False).head(10)
-        fig_top = px.bar(df_top10, x="name_restaurant", y="Pedidos Mes", title="Top 10 Establecimientos por Pedidos")
+        df_top["Pedidos Mes"] = df_top[cols_dias].sum(axis=1)
+        fig_top = px.bar(df_top.sort_values("Pedidos Mes", ascending=False), x="name_restaurant", y="Pedidos Mes", title="Top 10")
         fig_top.update_layout(xaxis_title="Establecimiento", yaxis_title="Pedidos")
         st.plotly_chart(fig_top, use_container_width=True)
     with st.sidebar:
