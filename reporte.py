@@ -349,7 +349,8 @@ def app():
     with c2:
         cols_dias = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
         df_top["Pedidos Mes"] = df_top[cols_dias].sum(axis=1)
-        fig_top = px.bar(df_top.sort_values("Pedidos Mes", ascending=False), x="name_restaurant", y="Pedidos Mes", title="Top 10")
+        df_top10 = df_metricas.sort_values("Pedidos Mes", ascending=False).head(10)
+        fig_top = px.bar(df_top10, x="name_restaurant", y="Pedidos Mes", title="Top 10 Establecimientos por Pedidos")
         fig_top.update_layout(xaxis_title="Establecimiento", yaxis_title="Pedidos")
         st.plotly_chart(fig_top, use_container_width=True)
     with st.sidebar:
